@@ -3,7 +3,7 @@ import json
 from collections import defaultdict
 
 import constants
-from showdown.helpers import calculate_stats
+from showdown.engine.helpers import calculate_stats
 
 from showdown.battle import Battle
 from showdown.battle import Pokemon
@@ -1636,6 +1636,53 @@ class TestTransform(unittest.TestCase):
 
     def test_transform_into_switching_pokemon_properly_copies_the_pokemon_that_was_in_before_the_switch(self):
         split_msg = ['', '-transform', 'p2a: Ditto', 'p1a: Charmander', '[from] ability: Imposter']
+
+        expected_stats = {
+            constants.ATTACK: 1,
+            constants.DEFENSE: 2,
+            constants.SPECIAL_ATTACK: 3,
+            constants.SPECIAL_DEFENSE: 4,
+            constants.SPEED: 5
+        }
+
+        expected_boosts = {
+            constants.ATTACK: 1,
+            constants.DEFENSE: 2,
+            constants.SPECIAL_ATTACK: 3,
+            constants.SPECIAL_DEFENSE: 4,
+            constants.SPEED: 5,
+        }
+
+        expected_ability = 'blaze'
+        expected_moves = [
+            Move('flamethrower'),
+            Move('firespin'),
+            Move('scratch'),
+            Move('growl')
+        ]
+        expected_types = [
+            'fire'
+        ]
+
+        # the charmander is active when the switch occurs
+        # the charmander pokemon from the request json should be used for stats
+        self.battle.user.active = Pokemon('Charmander', 100)
+        self.battle.user.active.moves = expected_moves
+        self.battle.user.active.boosts = expected_boosts
+        self.battle.user.reserve = [
+            Pokemon('Weedle', 100)
+        ]
+
+        transform(self.battle, split_msg)
+
+        self.assertEqual(expected_stats, self.battle.opponent.active.stats)
+        self.assertEqual(expected_ability, self.battle.opponent.active.ability)
+        self.assertEqual(expected_moves, self.battle.opponent.active.moves)
+        self.assertEqual(expected_types, self.battle.opponent.active.types)
+        self.assertEqual(expected_boosts, self.battle.opponent.active.boosts)
+
+    def test_pokemon_with_nicknames_transform_properly(self):
+        split_msg = ['', '-transform', 'p2a: SomeNickname', 'p1a: SomeOtherNickname', '[from] ability: Imposter']
 
         expected_stats = {
             constants.ATTACK: 1,
