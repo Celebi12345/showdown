@@ -18,7 +18,6 @@ from data.parse_smogon_stats import SPREADS_STRING
 from data.parse_smogon_stats import ABILITY_STRING
 from data.parse_smogon_stats import ITEM_STRING
 from data.helpers import get_pokemon_sets
-from data.helpers import get_standard_battle_sets
 from data.helpers import get_mega_pkmn_name
 from data.helpers import PASS_ITEMS
 from data.helpers import PASS_ABILITIES
@@ -69,7 +68,7 @@ class Battle(ABC):
 
         self.request_json = None
 
-    def initialize_team_preview(self, user_json, opponent_pokemon, battle_mode):
+    def initialize_team_preview(self, user_json, opponent_pokemon):
         self.user.from_json(user_json, first_turn=True)
         self.user.reserve.insert(0, self.user.active)
         self.user.active = None
@@ -78,20 +77,15 @@ class Battle(ABC):
             pokemon = Pokemon.from_switch_string(pkmn_string)
             self.opponent.reserve.append(pokemon)
 
-        smogon_usage_data = get_standard_battle_sets(battle_mode)
-        data.pokemon_sets = smogon_usage_data
-
         self.started = True
         self.rqid = user_json[constants.RQID]
 
-    def start_random_battle(self, user_json, opponent_switch_string):
+    def start_non_team_preview_battle(self, user_json, opponent_switch_string):
         self.user.from_json(user_json, first_turn=True)
 
         pkmn_information = opponent_switch_string.split('|')[3]
         pkmn = Pokemon.from_switch_string(pkmn_information)
         self.opponent.active = pkmn
-
-        data.pokemon_sets = data.random_battle_sets
 
         self.started = True
         self.rqid = user_json[constants.RQID]
@@ -425,7 +419,10 @@ class Pokemon:
         self.can_ultra_burst = False
         self.can_dynamax = False
         self.is_mega = False
+        self.can_have_assaultvest = True
         self.can_have_choice_item = True
+        self.can_not_have_band = False
+        self.can_not_have_specs = False
         self.can_have_life_orb = True
         self.can_have_heavydutyboots = True
 
@@ -530,6 +527,11 @@ class Pokemon:
         return remove_duplicate_spreads(possible_spreads)
 
     def get_possible_items(self, items):
+        # a bunch of flags could be set by the logic in the `battle_modifier` module
+        # these flags being set render some items not possible
+        # for example, if a pkmn uses 2 different moves without switching, then 'can_have_choice_item' will be False
+        # this will omit choice items when guessing an item
+
         if self.item == constants.UNKNOWN_ITEM:
             cumulative_percentage = 0
             possible_items = []
@@ -540,7 +542,13 @@ class Pokemon:
                     pass
                 elif i[0] == 'lifeorb' and not self.can_have_life_orb:
                     pass
+                elif i[0] == 'assaultvest' and not self.can_have_assaultvest:
+                    pass
                 elif i[0] == 'heavydutyboots' and not self.can_have_heavydutyboots:
+                    pass
+                elif i[0] == 'choiceband' and self.can_not_have_band:
+                    pass
+                elif i[0] == 'choicespecs' and self.can_not_have_specs:
                     pass
                 elif i[0] not in PASS_ITEMS:
                     possible_items.append(i[0])

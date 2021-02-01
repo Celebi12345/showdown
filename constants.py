@@ -7,6 +7,13 @@ DEFAULT_MODE = "gen7randombattle"
 STANDARD_BATTLE = "standard_battle"
 RANDOM_BATTLE = "random_battle"
 
+NO_TEAM_PREVIEW_GENS = {
+    "gen1",
+    "gen2",
+    "gen3",
+    "gen4"
+}
+
 PICK_SAFEST = "safest"
 PICK_NASH_EQUILIBRIUM = "nash"
 
@@ -23,7 +30,7 @@ SETS = "sets"
 
 UNKNOWN_ITEM = "unknown_item"
 
-UNKOWN_POKEMON_FORMES = ['silvally', 'arceus', 'genesect']
+UNKOWN_POKEMON_FORMES = ['silvally', 'arceus', 'genesect', 'urshifu']
 
 SMOGON_HAS_STATS_PAGE_SUFFIXES = ["ubers", "ou", "uu", "ru", "nu", "pu", "lc", "oublitz", "nationaldexbeta", "nationaldex", "monotype"]
 
@@ -228,6 +235,8 @@ POKEMON_CANNOT_HAVE_ITEMS_REMOVED = {
     'kyogreprimal',
     'groudonprimal',
     'giratinaorigin',
+    'zaciancrowned',
+    'zamazentacrowned'
 }
 
 # Hazards
@@ -250,6 +259,11 @@ FIRST_TURN_MOVES = {
 BOOST_RESET_MOVES = {
     'haze',
     'clearsmog'
+}
+
+ABILITY_AFTER_MOVE = {
+    "static",
+    "flamebody"
 }
 
 WEIGHT_BASED_MOVES = {
